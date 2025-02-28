@@ -1,14 +1,18 @@
 import { Exclude, Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { CreateUserPresenter } from '../../user/presenter/create-user.presenter';
 
 @Exclude()
 export class RegisterPresenter {
   @Expose()
-  user: any;
+  @ApiProperty({
+    type: CreateUserPresenter,
+  })
+  user: CreateUserPresenter;
 
   @Expose()
   @ApiProperty({
     type: String,
   })
-  access_token: string;
+  token: string;
 }

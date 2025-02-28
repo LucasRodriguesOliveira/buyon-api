@@ -1,0 +1,13 @@
+type User
+
+type AuthResult {
+  user: User!
+  token: String!
+}
+
+input CreateUserDto
+
+type Mutation {
+  login(email: String!, password: String!): AuthResult!
+  register(createUserDto: CreateUserDto!): AuthResult!
+}

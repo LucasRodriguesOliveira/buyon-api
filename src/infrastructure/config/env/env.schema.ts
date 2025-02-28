@@ -11,4 +11,5 @@ export const envSchema = Joi.object({
     .default('v0.1')
     .regex(/v\d\.\d+\.\d+/),
   API_DESCRIPTION: Joi.string().optional().default(''),
+  SECRET_TOKEN: Joi.string().required(),
 });

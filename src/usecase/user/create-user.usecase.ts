@@ -1,18 +1,18 @@
 import { IHttpException } from 'src/domain/exception/http-exception.interface';
 import { UserModel } from 'src/domain/model/user.model';
-import { IAuthService } from 'src/domain/service/auth/auth-service.interface';
+import { IUserService } from 'src/domain/service/user/user-service.interface';
 
-export class LoginUseCase {
+export class CreateUserUseCase {
   constructor(
-    private readonly authService: IAuthService,
+    private readonly service: IUserService,
     private readonly exceptionService: IHttpException,
   ) {}
 
-  public async login(user: Partial<UserModel>) {
-    const result = await this.authService.login(user);
+  public async run(user: Partial<UserModel>) {
+    const result = await this.service.create(user);
 
     if (result.error) {
-      this.exceptionService.unauthorized({
+      this.exceptionService.internalServerError({
         message: result.error.message,
       });
     }

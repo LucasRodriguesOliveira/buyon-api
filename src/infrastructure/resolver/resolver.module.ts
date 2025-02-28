@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from './auth/auth.controller';
 import { UsecaseProxyModule } from '../usecase-proxy/usecase-proxy.module';
 import { HttpExceptionModule } from '../http-exception/http-exception.module';
 import { LoggerModule } from '../logger/logger.module';
+import { UserResolver } from './user/user.resolver';
+import { AuthResolver } from './auth/auth.resolver';
 
 @Module({
   imports: [UsecaseProxyModule.register(), HttpExceptionModule, LoggerModule],
-  controllers: [AuthController],
+  providers: [UserResolver, AuthResolver],
 })
-export class ControllerModule {}
+export class ResolverModule {}

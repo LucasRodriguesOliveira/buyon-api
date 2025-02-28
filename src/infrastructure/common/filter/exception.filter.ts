@@ -1,22 +1,22 @@
 import {
   ArgumentsHost,
   Catch,
-  ExceptionFilter,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { LoggerService } from '../../logger/logger.service';
 import { IFormatExceptionMessage } from 'src/domain/exception/http-exception.interface';
-import { Request, Response } from 'express';
+import { GqlArgumentsHost, GqlExceptionFilter } from '@nestjs/graphql';
+import { GraphQLResolveInfo } from 'graphql';
+import { Path } from 'graphql/jsutils/Path';
 
-@Catch()
-export class AllExceptionFilter implements ExceptionFilter {
+@Catch(HttpException)
+export class HttpExceptionFilter implements GqlExceptionFilter {
   constructor(private readonly logger: LoggerService) {}
 
   catch(exception: HttpException | Error, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response: Response = ctx.getResponse();
-    const request: Request = ctx.getRequest();
+    const gqlHost = GqlArgumentsHost.create(host);
+    const { path } = gqlHost.getInfo<GraphQLResolveInfo>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let result: IFormatExceptionMessage;
@@ -30,37 +30,29 @@ export class AllExceptionFilter implements ExceptionFilter {
         errCode: null,
       };
     }
+    this.logMessage(path, result, status, exception);
 
-    const responseData = {
-      status,
-      timestamp: new Date().toISOString(),
-      path: request.url,
-      ...result,
-    };
-
-    this.logMessage(request, result, status, exception);
-
-    response.status(status).send(responseData);
+    return exception;
   }
 
   private logMessage(
-    request: Request,
+    path: Path,
     message: IFormatExceptionMessage,
     status: number,
     exception: HttpException | Error,
   ) {
     if (HttpStatus.INTERNAL_SERVER_ERROR === status) {
       this.logger.error(
-        `End Request for ${request.path}`,
-        `method=${request.method} status=${status} errCode=${message.errCode ?? null} message=${message.message ?? null}`,
+        `End Request for ${path.key}`,
+        `method=${path.typename} status=${status} errCode=${message.errCode ?? null} message=${message.message ?? null}`,
         exception.stack,
       );
       return;
     }
 
     this.logger.warn(
-      `End Request for ${request.path}`,
-      `method=${request.method} status=${status} errCode=${message.errCode ?? null} message=${message.message ?? null}`,
+      `End Request for ${path.key}`,
+      `method=${path.typename} status=${status} errCode=${message.errCode ?? null} message=${message.message ?? null}`,
     );
   }
 }
